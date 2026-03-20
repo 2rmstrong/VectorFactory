@@ -30,6 +30,7 @@ Armstrong-VectorFactory/
 ├── data_pipeline/         # 数据流管道：外部 API 接入与 DuckDB 增量更新层
 ├── strategies/            # 向量工厂：策略信号提取脚本
 └── backtests/             # 实验沙盒：策略的历史回放与资金曲线测算
+└── docs/                  # 存档：回测图片
 ```
 
 ## 🚀 第一批核心战术矩阵 (Strategies)
@@ -43,6 +44,7 @@ Armstrong-VectorFactory/
 经过 10 年以上数据样本回测验证，在当前 A 股市场的微观结构下，本矩阵中有效性最强、夏普比率最高的两套模型为：
 
 SM-05 (Fama-French 小市值底座)：在 A 股，“微小市值+低估值”因子的超额收益（Alpha）极其显著且具备长期持续性，是截面选股的最强底座因子之一。
+![SM-05 回测曲线](docs/images/SM-05-backtest.png)
 
 SM-07 (Pairs Trading 协整配对)：利用强相关资产的均值回归特性，在震荡市与熊市中表现出极强的抗跌能力，贡献了极为稀缺的“市场中性 Alpha”。
 

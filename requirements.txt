@@ -1,0 +1,7 @@
+polars>=0.20.0
+duckdb>=0.10.0
+scikit-learn
+tushare
+pandas  # 尽管不推荐用，但部分三方库可能需要
+cupy-cuda12x  # 对应您的 GPU 加速需求，12x 对应最新的 CUDA
+matplotlib
