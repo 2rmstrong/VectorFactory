@@ -4,11 +4,11 @@
 >
 > "Everything is a Vector. Every Alpha is a Signal."
 
-License
-Python
-Engine
-Market
-Computing
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9+-yellow.svg)](https://www.python.org/)
+[![Engine](https://img.shields.io/badge/Engine-Backtesting-orange.svg)](#)
+[![Market](https://img.shields.io/badge/Market-A--Share%20%26%20US-green.svg)](#)
+[![Computing](https://img.shields.io/badge/Computing-Cloud%20%26%20GPU-lightgrey.svg)](#)
 
 ## 🏗️ 架构哲学 (The Philosophy)
 
