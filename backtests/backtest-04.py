@@ -13,8 +13,14 @@ from __future__ import annotations
 
 import math
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
@@ -30,7 +36,7 @@ def _load_strategy():
     - sm_04_rsi_divergence.py（推荐）
     - SM-策略-04-rsi divergence.py（用户可能的旧/变体命名）
     """
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
     for name in ("sm_04_rsi_divergence.py", "SM-策略-04-rsi divergence.py", "SM-策略-04-rsi_divergence.py"):
         path = os.path.join(root, name)
         if os.path.isfile(path):
@@ -315,9 +321,7 @@ if __name__ == "__main__":
         t_plus_one=True,
     )
 
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
     if not os.path.isfile(db_path):
         raise FileNotFoundError(f"未找到数据库：{db_path}")
 
@@ -339,5 +343,5 @@ if __name__ == "__main__":
     print(f"平均每日持仓: {meta['avg_holdings']:.2f}")
     print(f"买不起一手拒单次数: {meta['reject_lot_too_expensive']}")
 
-    plot_nav(daily, path="rsi_div_nav.png")
+    plot_nav(daily, path=pp.docs_plot_path("rsi_div_nav", daily, cfg.start_date, cfg.end_date))
 

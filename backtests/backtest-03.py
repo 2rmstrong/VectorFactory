@@ -10,8 +10,14 @@ BOLL 极限反转 · 回测框架（独立入口）
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
@@ -22,7 +28,7 @@ LOT_SIZE = 100
 
 
 def _load_strategy():
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
     name = "SM-策略-03-boll.py"
     path = os.path.join(root, name)
     if not os.path.isfile(path):
@@ -336,9 +342,7 @@ if __name__ == "__main__":
         t_plus_one=True,
     )
 
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
     if not os.path.isfile(db_path):
         raise FileNotFoundError(f"未找到数据库：{db_path}")
 
@@ -349,5 +353,5 @@ if __name__ == "__main__":
     print(f"已从 {db_path} 加载 {len(df):,} 条日线，{df['ts_code'].n_unique()} 只标的。")
     daily, meta = run_backtest(df, config)
     print_stats(daily, meta, initial_capital=config.initial_capital)
-    plot_nav(daily)
+    plot_nav(daily, path=pp.docs_plot_path("boll_nav", daily, config.start_date, config.end_date))
 

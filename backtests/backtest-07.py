@@ -12,9 +12,15 @@ from __future__ import annotations
 
 import math
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Iterable
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import numpy as np
@@ -89,9 +95,7 @@ class PairPosition:
 
 
 def _ensure_abs(path: str) -> str:
-    if os.path.isabs(path):
-        return path
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
+    return pp.resolve_db_path(path)
 
 
 def _month_ends(trade_dates: list[str]) -> list[str]:
@@ -688,9 +692,7 @@ def plot_nav(daily: pl.DataFrame, path: str = "pairs_nav.png") -> None:
 
 
 def _ensure_abs(path: str) -> str:
-    if os.path.isabs(path):
-        return path
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), path)
+    return pp.resolve_db_path(path)
 
 
 def _month_ends(trade_dates: list[str]) -> list[str]:
@@ -1379,5 +1381,5 @@ if __name__ == "__main__":
     print(f"平均持仓天数: {s['avg_hold_days']:.2f}")
     print(f"胜率(按交易): {s['win_rate']:.4f}")
 
-    plot_nav(daily, path="pairs_nav.png")
+    plot_nav(daily, path=pp.docs_plot_path("pairs_nav", daily, cfg.start_date, cfg.end_date))
 

@@ -14,8 +14,14 @@ from __future__ import annotations
 
 import math
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
@@ -26,12 +32,12 @@ LOT_SIZE = 100
 
 def _load_strategy():
     """
-    动态加载 FF 策略模块。
+    动态加载 FF 策略模块（位于仓库 strategies/ 目录）。
     兼容两种文件名：
     - sm_05_fama_french_value_size.py（推荐）
     - SM-策略-05-fama french value size.py（用户可能的命名）
     """
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
     for name in (
         "sm_05_fama_french_value_size.py",
         "SM-策略-05-fama french value size.py",
@@ -45,7 +51,9 @@ def _load_strategy():
             mod = module_from_spec(spec)
             spec.loader.exec_module(mod)
             return getattr(mod, "generate_ff_signals")
-    raise FileNotFoundError("未找到策略文件：sm_05_fama_french_value_size.py")
+    raise FileNotFoundError(
+        f"未找到策略文件（已在 strategies/ 查找）：sm_05_fama_french_value_size.py / SM-策略-05-fama french value size.py，目录={root}"
+    )
 
 
 generate_ff_signals = _load_strategy()
@@ -349,9 +357,7 @@ if __name__ == "__main__":
         top_n_exit=150,
     )
 
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
     if not os.path.isfile(db_path):
         raise FileNotFoundError(f"未找到数据库：{db_path}")
 
@@ -373,5 +379,5 @@ if __name__ == "__main__":
     print(f"平均每日持仓: {meta['avg_holdings']:.2f}")
     print(f"年化换手率:   {meta['annual_turnover']:.4f}")
 
-    plot_nav(daily, path="ff_nav.png")
+    plot_nav(daily, path=pp.docs_plot_path("ff_nav", daily, cfg.start_date, cfg.end_date))
 

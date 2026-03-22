@@ -6,15 +6,21 @@
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
 
 # ----------------- 策略加载：从 SM-策略-01-turtle.py 导入 -----------------
 def _load_strategy():
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
     # 兼容旧文件名：优先加载新文件名，找不到再回退
     for name in (
         "SM-策略-01-turtle.py",
@@ -312,9 +318,7 @@ if __name__ == "__main__":
     )
 
     # 优先从 shiming_daily_base.duckdb 读日线（前复权）；否则用合成数据
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
 
     if os.path.isfile(db_path):
         try:
@@ -345,4 +349,4 @@ if __name__ == "__main__":
 
     daily, trade_pnls = run_backtest(df, config)
     print_stats(daily, trade_pnls=trade_pnls, initial_capital=config.initial_capital)
-    plot_nav(daily)
+    plot_nav(daily, path=pp.docs_plot_path("turtle_nav", daily, config.start_date, config.end_date))

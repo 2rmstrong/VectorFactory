@@ -9,8 +9,14 @@ Dual Thrust · 回测框架（独立入口）
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
@@ -21,11 +27,11 @@ LOT_SIZE = 100
 
 
 def _load_strategy():
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
     name = "SM-策略-02-dual thrust.py"
     path = os.path.join(root, name)
     if not os.path.isfile(path):
-        raise FileNotFoundError(f"未找到策略文件：{name}")
+        raise FileNotFoundError(f"未找到策略文件：{name}（已查 {root}）")
 
     from importlib.util import spec_from_file_location, module_from_spec
 
@@ -392,9 +398,7 @@ if __name__ == "__main__":
         K2=0.5,
     )
 
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
 
     if not os.path.isfile(db_path):
         raise FileNotFoundError(f"未找到数据库：{db_path}")
@@ -408,5 +412,5 @@ if __name__ == "__main__":
     # 补充 meta 信息用于展示
     meta = {**meta, "n_slots": config.n_slots}
     print_stats(daily, meta, initial_capital=config.initial_capital)
-    plot_nav(daily)
+    plot_nav(daily, path=pp.docs_plot_path("dual_thrust_nav", daily, config.start_date, config.end_date))
 

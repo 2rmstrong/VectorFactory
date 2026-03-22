@@ -11,11 +11,16 @@ import os
 import sys
 from datetime import datetime
 
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
+
 import polars as pl
 
-_root = os.path.dirname(os.path.abspath(__file__))
-if _root not in sys.path:
-    sys.path.insert(0, _root)
+_bt_dir = os.path.dirname(os.path.abspath(__file__))
+if _bt_dir not in sys.path:
+    sys.path.insert(0, _bt_dir)
 
 from sm_backtest_09_pead import BacktestConfig, _ensure_signal_columns, plot_nav, print_stats, run_backtest
 
@@ -44,10 +49,10 @@ if __name__ == "__main__":
         buy_cost=0.0003,
     )
 
-    default_signal = os.path.join(_root, "SM-策略-09-pead_signals.parquet")
+    default_signal = os.path.join(pp.strategies_dir(), "SM-策略-09-pead_signals.parquet")
     signal_path = os.getenv("PEAD_SIGNAL_PATH", default_signal)
     if not os.path.isabs(signal_path):
-        signal_path = os.path.join(_root, signal_path)
+        signal_path = os.path.join(pp.repo_root(), signal_path)
     # 若用户环境变量指向不存在文件，则回退到默认文件名
     if not os.path.isfile(signal_path) and os.path.isfile(default_signal):
         signal_path = default_signal
@@ -95,4 +100,4 @@ if __name__ == "__main__":
 
     daily, meta = run_backtest(df_signal, cfg)
     print_stats(daily, meta, cfg)
-    plot_nav(daily, path="pead_nav.png")
+    plot_nav(daily, path=pp.docs_plot_path("pead_nav", daily, cfg.start_date, cfg.end_date))

@@ -8,15 +8,21 @@ from __future__ import annotations
 
 import math
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
 
 # ----------------- 策略加载 -----------------
 def _load_strategy():
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
     for name in (
         "SM-策略-08-risk parity.py",
         "sm_08_risk_parity.py",
@@ -273,9 +279,7 @@ if __name__ == "__main__":
         vol_window=60,
     )
 
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
 
     if os.path.isfile(db_path):
         try:
@@ -318,4 +322,4 @@ if __name__ == "__main__":
 
     daily, meta = run_backtest(df, config)
     print_stats(daily, initial_capital=config.initial_capital)
-    plot_nav(daily)
+    plot_nav(daily, path=pp.docs_plot_path("risk_parity_nav", daily, config.start_date, config.end_date))

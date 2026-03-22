@@ -15,8 +15,14 @@ from __future__ import annotations
 
 import math
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
+
+_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo not in sys.path:
+    sys.path.insert(0, _repo)
+import project_paths as pp
 
 import duckdb
 import polars as pl
@@ -30,7 +36,7 @@ def _load_cross_section_strategy():
     动态加载截面策略模块（默认使用动量强者恒强模板）。
     目标：导入后获得一个可调用的信号函数，输入 df，输出含 final_rank/entry_signal/exit_signal 的 df。
     """
-    root = os.path.dirname(os.path.abspath(__file__))
+    root = pp.strategies_dir()
 
     # 默认：你当前的截面策略（也与你的描述最贴近）
     candidates = [
@@ -364,9 +370,7 @@ if __name__ == "__main__":
         sell_cost=0.0013,
     )
 
-    db_path = os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), db_path)
+    db_path = pp.resolve_db_path(os.getenv("DUCKDB_PATH", "shiming_daily_base.duckdb"))
     if not os.path.isfile(db_path):
         raise FileNotFoundError(f"未找到数据库：{db_path}")
 
@@ -386,5 +390,5 @@ if __name__ == "__main__":
     print(f"平均每日持仓: {meta.get('avg_holdings', 0.0):.2f}")
     print(f"年化双边换手率: {meta.get('annual_turnover', 0.0):.4f}")
 
-    plot_nav(daily, path="cross_sectional_nav.png")
+    plot_nav(daily, path=pp.docs_plot_path("cross_sectional_nav", daily, cfg.start_date, cfg.end_date))
 
